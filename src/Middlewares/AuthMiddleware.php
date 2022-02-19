@@ -5,9 +5,13 @@
 
 namespace Thibaultjunin\Api\Middlewares;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionException;
+use ReflectionMethod;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Psr7\Factory\StreamFactory;
 use Thibaultjunin\Api\Api;
 use Thibaultjunin\Api\Attributes\Auth;
 use Thibaultjunin\Api\Utils\StringUtils;
@@ -16,25 +20,25 @@ class AuthMiddleware
 {
 
     private string $realm;
-    private string $attribute_name;
 
     /**
      * @param string $realm
-     * @param string $attribute_name
      */
-    public function __construct(string $realm = "API", string $attribute_name = "user")
+    public function __construct(string $realm = "API")
     {
         $this->realm = $realm;
-        $this->attribute_name = $attribute_name;
     }
 
-    public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $requestHandler)
+    /**
+     * @throws ReflectionException
+     */
+    public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $requestHandler): ResponseInterface
     {
         // Getting the route callable
         $callable = $request->getAttribute('__route__')->getCallable();
 
         // New reflection method to get Auth Attributes
-        $method = new \ReflectionMethod(StringUtils::before(":", $callable), StringUtils::after(":", $callable));
+        $method = new ReflectionMethod(StringUtils::before(":", $callable), StringUtils::after(":", $callable));
         $authAttributes = $method->getAttributes(Auth::class);
 
         // If no auth attribute is present, consider everyone is allowed.
@@ -69,13 +73,13 @@ class AuthMiddleware
             return $responseFactory->createResponse(401)
                 ->withHeader("WWW-Authenticate", sprintf("%s realm=%s", $method, $this->realm))
                 ->withHeader("Content-Type", "application/json")
-                ->getBody()->write(json_encode([
+                ->withBody((new StreamFactory())->createStream(json_encode([
                     "success" => false,
                     "errors" => ["Authentication failed"]
-                ]));
+                ])));
         }
 
-        $request = $request->withAttribute($this->attribute_name, $user);
+        $request = $request->withAttribute("user", $user);
 
         if (in_array(Auth::ALL, $roles)) {
             return $requestHandler->handle($request);
@@ -90,10 +94,10 @@ class AuthMiddleware
         $responseFactory = new ResponseFactory();
         return $responseFactory->createResponse(403)
             ->withHeader("Content-Type", "application/json")
-            ->getBody()->write(json_encode([
+            ->withBody((new StreamFactory())->createStream(json_encode([
                 "success" => false,
                 "errors" => ["Forbidden"]
-            ]));
+            ])));
     }
 
 }

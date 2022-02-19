@@ -5,34 +5,16 @@
 
 namespace Thibaultjunin\Api\Controllers;
 
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
 use Thibaultjunin\Api\Attributes\APIField;
 use Thibaultjunin\Api\Helpers\Helper;
 use Validator\Validator;
 
-abstract class ApiController
+abstract class ApiController extends Controller
 {
-
-    private ContainerInterface $container;
-
-    /**
-     * @param ContainerInterface $container
-     */
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
-    }
 
     public function listElements(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
     {
@@ -89,7 +71,7 @@ abstract class ApiController
     private function getHelperFields(Helper $helper)
     {
         $fields = [];
-        $class = new \ReflectionClass($helper);
+        $class = new ReflectionClass($helper);
         foreach ($class->getProperties() as $property) {
             $attributes = $property->getAttributes(APIField::class);
             if (!empty($attributes)) {
