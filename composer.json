@@ -1,0 +1,25 @@
+{
+    "name": "thibaultjunin/api",
+    "description": "An API base for my Slim4 boilerplate",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Thibaultjunin\\Api\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Thibault JUNIN",
+            "email": "spamfree@thibaultjunin.fr"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "psr/http-server-handler": "^1.0",
+        "slim/psr7": "^1.5",
+        "thecodingmachine/graphqlite": "^5.0",
+        "lefuturiste/validator": "^1.4",
+        "slim/http": "^1.2"
+    }
+}
