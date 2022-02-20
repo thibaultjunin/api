@@ -72,9 +72,9 @@ class Api
     public function setUser(string $user): void
     {
         try {
-            new ReflectionClass($this->user);
+            new ReflectionClass($user);
         } catch (ReflectionException $e) {
-            throw new ClassNotFoundException($this->user, $e);
+            throw new ClassNotFoundException($user, $e);
         }
         $this->user = $user;
     }
