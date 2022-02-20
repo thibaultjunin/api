@@ -41,7 +41,7 @@ abstract class ApiController extends Controller
 
     public function addElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
     {
-        $validator = new Validator($request->getParsedBody());
+        $validator = new Validator($request->getParsedBody() ?? []);
         $fields = $this->getHelperFields($helper);
         $this->addValidation($fields, $validator);
 
@@ -53,7 +53,7 @@ abstract class ApiController extends Controller
         }
 
         foreach ($fields as $field => $fl) {
-            $helper->offsetSet($field, $request->getParsedBody()[$field]); // FIXME: SECURITY: Sanitize input and block not allowed variables
+            $helper->offsetSet($field, $this->sanitize($request->getParsedBody()[$field], $fl));
         }
 
         if (!$helper->save()) {
@@ -134,7 +134,7 @@ abstract class ApiController extends Controller
 
     public function updateElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
     {
-        $validator = new Validator($request->getParsedBody());
+        $validator = new Validator($request->getParsedBody() ?? []);
         $fields = $this->getHelperFields($helper);
         $this->addValidation($fields, $validator);
 
@@ -154,7 +154,7 @@ abstract class ApiController extends Controller
         }
 
         foreach ($fields as $field => $fl) {
-            $helper->offsetSet($field, $request->getParsedBody()[$field]); // FIXME: SECURITY: Sanitize input and block not allowed variables
+            $helper->offsetSet($field, $this->sanitize($request->getParsedBody()[$field], $fl));
         }
 
         if (!$helper->save()) {
@@ -212,6 +212,42 @@ abstract class ApiController extends Controller
         return $response->withJson([
             "success" => true,
         ]);
+    }
+
+    private function sanitize($input, $flags)
+    {
+
+//        $input = filter_var($input, FILTER_SANITIZE_STRING);
+
+        if (APIField::isFlagSet($flags, APIField::EMAIL)) {
+            $input = filter_var($input, FILTER_SANITIZE_EMAIL);
+        }
+
+//        if(APIField::isFlagSet($flags, APIField::SLUG)){
+//            $input = filter_var($input, FILTER_SANITIZE_STRING);
+//        }
+
+//        if(APIField::isFlagSet($flags, APIField::ALPHANUMERICAL)){
+//            $input = filter_var($input, FILTER_SANITIZE_STRING);
+//        }
+
+//        if(APIField::isFlagSet($flags, APIField::BOOLEAN)){
+//            $input = filter_var($input, FILTER_SANITIZE_STRING);
+//        }
+
+        if (APIField::isFlagSet($flags, APIField::FLOAT)) {
+            $input = filter_var($input, FILTER_SANITIZE_NUMBER_FLOAT);
+        }
+
+        if (APIField::isFlagSet($flags, APIField::INTEGER)) {
+            $input = filter_var($input, FILTER_SANITIZE_NUMBER_INT);
+        }
+
+        if (APIField::isFlagSet($flags, APIField::URL)) {
+            $input = filter_var($input, FILTER_SANITIZE_URL);
+        }
+
+        return $input;
     }
 
     public abstract function list(Request $request, Response $response, array $args);
