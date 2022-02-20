@@ -163,6 +163,14 @@ abstract class ApiController extends Controller
             ])->withStatus(500);
         }
 
+        $helper = $helper->get($helper->getUuid());
+        if ($helper == NULL) {
+            return $response->withJson([
+                "success" => false,
+                "errors" => ["Resource not found"],
+            ])->withStatus(404);
+        }
+
         return $response->withJson([
             "success" => true,
             "data" => $helper->jsonSerialize(),
