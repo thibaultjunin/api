@@ -5,15 +5,32 @@
 
 namespace Thibaultjunin\Api;
 
+use ReflectionClass;
+use ReflectionException;
 use Thibaultjunin\Api\Auth\AuthInterface;
+use Thibaultjunin\Api\Exceptions\ClassNotFoundException;
 
 class Api
 {
 
     private static Api $instance;
     private AuthInterface $auth;
+    private string $user;
     private bool $devMode = true;
     private ?string $cacheFolder = null;
+
+    public function __construct()
+    {
+        self::$instance = $this;
+    }
+
+    /**
+     * @return Api
+     */
+    public static function getInstance(): Api
+    {
+        return self::$instance;
+    }
 
     /**
      * @return string|null
@@ -31,17 +48,35 @@ class Api
         $this->cacheFolder = $cacheFolder;
     }
 
-    public function __construct()
+    /**
+     * @throws ReflectionException
+     */
+    public function getUserInstance($uuid): object
     {
-        self::$instance = $this;
+        $ref = new ReflectionClass($this->user);
+        return $ref->newInstanceArgs([$uuid]);
     }
 
     /**
-     * @return Api
+     * @return string
      */
-    public static function getInstance(): Api
+    public function getUser(): string
     {
-        return self::$instance;
+        return $this->user;
+    }
+
+    /**
+     * @param string $user
+     * @throws ClassNotFoundException
+     */
+    public function setUser(string $user): void
+    {
+        try {
+            new ReflectionClass($this->user);
+        } catch (ReflectionException $e) {
+            throw new ClassNotFoundException($this->user, $e);
+        }
+        $this->user = $user;
     }
 
     /**

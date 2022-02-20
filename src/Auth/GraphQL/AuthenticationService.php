@@ -5,7 +5,10 @@
 
 namespace Thibaultjunin\Api\Auth\GraphQL;
 
+use ReflectionException;
 use TheCodingMachine\GraphQLite\Security\AuthenticationServiceInterface;
+use Thibaultjunin\Api\Api;
+
 
 class AuthenticationService implements AuthenticationServiceInterface
 {
@@ -20,13 +23,19 @@ class AuthenticationService implements AuthenticationServiceInterface
         $this->user = $user;
     }
 
-    public function isLogged(): bool
-    {
-        // TODO: Implement isLogged() method.
-    }
-
+    /**
+     * @throws ReflectionException
+     */
     public function getUser(): ?object
     {
-        // TODO: Implement getUser() method.
+        if (!$this->isLogged()) {
+            return null;
+        }
+        return Api::getInstance()->getUserInstance($this->user);
+    }
+
+    public function isLogged(): bool
+    {
+        return $this->user != null;
     }
 }

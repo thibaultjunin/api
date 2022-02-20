@@ -5,7 +5,9 @@
 
 namespace Thibaultjunin\Api\Auth\GraphQL;
 
+use ReflectionException;
 use TheCodingMachine\GraphQLite\Security\AuthorizationServiceInterface;
+use Thibaultjunin\Api\Api;
 
 class AuthorizationService implements AuthorizationServiceInterface
 {
@@ -20,8 +22,12 @@ class AuthorizationService implements AuthorizationServiceInterface
         $this->user = $user;
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function isAllowed(string $right, $subject = null): bool
     {
-        // TODO: Implement isAllowed() method.
+        $user = Api::getInstance()->getUserInstance($this->user);
+        return in_array($right, $user->getRoles());
     }
 }
