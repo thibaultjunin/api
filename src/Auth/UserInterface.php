@@ -10,6 +10,6 @@ interface UserInterface
 
     public function __construct(string $uuid);
 
-    public function getRoles();
+    public function getRoles(): array;
 
 }
