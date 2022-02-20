@@ -1,6 +1,9 @@
 # API
 
+# WORK IN PROGESS
+
 Init the library:
+
 ```php 
 $api = new \Thibaultjunin\Api\Api();
 $api->setAuth(new AuthInterfaceImpl());
