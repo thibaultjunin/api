@@ -6,11 +6,16 @@
 namespace Thibaultjunin\Api\Helpers;
 
 
-abstract class Helper implements \ArrayAccess, \JsonSerializable
+use ArrayAccess;
+use DateTime;
+use DateTimeInterface;
+use JsonSerializable;
+
+abstract class Helper implements ArrayAccess, JsonSerializable
 {
-    private ?string $uuid;
-    private ?\DateTime $created_at;
-    private ?\DateTime $updated_at;
+    private ?string $uuid = null;
+    private ?DateTime $created_at = null;
+    private ?DateTime $updated_at = null;
 
     /**
      * @param $uuid
@@ -50,8 +55,8 @@ abstract class Helper implements \ArrayAccess, \JsonSerializable
     {
         return array_merge([
             "uuid" => $this->getUuid(),
-            "created_at" => $this->getCreatedAt()->format(\DateTimeInterface::ISO8601),
-            "updated_at" => $this->getUpdatedAt()->format(\DateTimeInterface::ISO8601),
+            "created_at" => $this->getCreatedAt()->format(DateTimeInterface::ISO8601),
+            "updated_at" => $this->getUpdatedAt()->format(DateTimeInterface::ISO8601),
         ], $this->serialize());
     }
 
@@ -72,33 +77,33 @@ abstract class Helper implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?DateTime
     {
         return $this->created_at;
     }
 
     /**
-     * @param \DateTime|null $created_at
+     * @param DateTime|null $created_at
      */
-    public function setCreatedAt(?\DateTime $created_at): void
+    public function setCreatedAt(?DateTime $created_at): void
     {
         $this->created_at = $created_at;
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getUpdatedAt(): ?\DateTime
+    public function getUpdatedAt(): ?DateTime
     {
         return $this->updated_at;
     }
 
     /**
-     * @param \DateTime|null $updated_at
+     * @param DateTime|null $updated_at
      */
-    public function setUpdatedAt(?\DateTime $updated_at): void
+    public function setUpdatedAt(?DateTime $updated_at): void
     {
         $this->updated_at = $updated_at;
     }
