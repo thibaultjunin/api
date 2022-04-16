@@ -8,10 +8,14 @@ namespace Thibaultjunin\Api\Auth;
 interface AuthInterface
 {
 
-    public function authenticateToken(string $token): bool;
-
-    public function getUserIdForToken(string $token): ?string;
-
-    public function getRolesForToken(string $token): ?array;
+    /**
+     * Authenticate a provided token.
+     *
+     * This method should return a UserInterface instance when the authentication is successful, null otherwise
+     *
+     * @param string $token
+     * @return UserInterface|null
+     */
+    public function authenticate(string $token): ?UserInterface;
 
 }
