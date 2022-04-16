@@ -18,8 +18,6 @@ abstract class ApiController extends Controller
 
     public function listElements(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
     {
-        $query = null; // FIXME:
-
         $page = 1;
         $per_page = 10;
 
@@ -33,7 +31,7 @@ abstract class ApiController extends Controller
         return $response->withJson([
             "success" => true,
             "data" => [
-                "elements" => $helper->list($query, $page, $per_page),
+                "elements" => $helper->list($page, $per_page),
             ],
             "total" => $helper->count(),
         ]);
@@ -52,28 +50,7 @@ abstract class ApiController extends Controller
             ])->withStatus(400);
         }
 
-        foreach ($fields as $field => $fl) {
-            $helper->offsetSet($field, $this->sanitize($request->getParsedBody()[$field], $fl));
-        }
-
-        if (!$helper->save()) {
-            return $response->withJson([
-                "success" => false,
-            ])->withStatus(500);
-        }
-
-        $helper = $helper->get($helper->getUuid());
-        if ($helper == NULL) {
-            return $response->withJson([
-                "success" => false,
-                "errors" => ["Resource not found"],
-            ])->withStatus(404);
-        }
-
-        return $response->withJson([
-            "success" => true,
-            "data" => $helper->jsonSerialize(),
-        ]);
+        return $this->elementUpdate($fields, $helper, $request, $response);
     }
 
     private function getHelperFields(Helper $helper)
@@ -132,27 +109,15 @@ abstract class ApiController extends Controller
         }
     }
 
-    public function updateElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
+    /**
+     * @param array $fields
+     * @param Helper $helper
+     * @param Request $request
+     * @param Response $response
+     * @return ResponseInterface|Response
+     */
+    public function elementUpdate(array $fields, Helper $helper, Request $request, Response $response): ResponseInterface|Response
     {
-        $validator = new Validator($request->getParsedBody() ?? []);
-        $fields = $this->getHelperFields($helper);
-        $this->addValidation($fields, $validator);
-
-        if (!$validator->isValid()) {
-            return $response->withJson([
-                "success" => false,
-                "errors" => $validator->getErrors(),
-            ])->withStatus(400);
-        }
-
-        $helper = $helper->get($args['uuid']);
-        if ($helper == NULL) {
-            return $response->withJson([
-                "success" => false,
-                "errors" => ["Resource not found"],
-            ])->withStatus(404);
-        }
-
         foreach ($fields as $field => $fl) {
             $helper->offsetSet($field, $this->sanitize($request->getParsedBody()[$field], $fl));
         }
@@ -174,43 +139,6 @@ abstract class ApiController extends Controller
         return $response->withJson([
             "success" => true,
             "data" => $helper->jsonSerialize(),
-        ]);
-    }
-
-    public function getElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
-    {
-        $helper = $helper->get($args['uuid']);
-        if ($helper == NULL) {
-            return $response->withJson([
-                "success" => false,
-                "errors" => ["Resource not found"],
-            ])->withStatus(404);
-        }
-
-        return $response->withJson([
-            "success" => true,
-            "data" => $helper->jsonSerialize(),
-        ]);
-    }
-
-    public function deleteElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
-    {
-        $helper = $helper->get($args['uuid']);
-        if ($helper == NULL) {
-            return $response->withJson([
-                "success" => false,
-                "errors" => ["Resource not found"],
-            ])->withStatus(404);
-        }
-
-        if (!$helper->delete()) {
-            return $response->withJson([
-                "success" => false,
-            ])->withStatus(500);
-        }
-
-        return $response->withJson([
-            "success" => true,
         ]);
     }
 
@@ -248,6 +176,67 @@ abstract class ApiController extends Controller
         }
 
         return $input;
+    }
+
+    public function updateElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
+    {
+        $validator = new Validator($request->getParsedBody() ?? []);
+        $fields = $this->getHelperFields($helper);
+        $this->addValidation($fields, $validator);
+
+        if (!$validator->isValid()) {
+            return $response->withJson([
+                "success" => false,
+                "errors" => $validator->getErrors(),
+            ])->withStatus(400);
+        }
+
+        $helper = $helper->get($args['uuid']);
+        if ($helper == NULL) {
+            return $response->withJson([
+                "success" => false,
+                "errors" => ["Resource not found"],
+            ])->withStatus(404);
+        }
+
+        return $this->elementUpdate($fields, $helper, $request, $response);
+    }
+
+    public function getElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
+    {
+        $helper = $helper->get($args['uuid']);
+        if ($helper == NULL) {
+            return $response->withJson([
+                "success" => false,
+                "errors" => ["Resource not found"],
+            ])->withStatus(404);
+        }
+
+        return $response->withJson([
+            "success" => true,
+            "data" => $helper->jsonSerialize(),
+        ]);
+    }
+
+    public function deleteElement(Helper $helper, Request $request, Response $response, array $args): Response|ResponseInterface
+    {
+        $helper = $helper->get($args['uuid']);
+        if ($helper == NULL) {
+            return $response->withJson([
+                "success" => false,
+                "errors" => ["Resource not found"],
+            ])->withStatus(404);
+        }
+
+        if (!$helper->delete()) {
+            return $response->withJson([
+                "success" => false,
+            ])->withStatus(500);
+        }
+
+        return $response->withJson([
+            "success" => true,
+        ]);
     }
 
     public abstract function list(Request $request, Response $response, array $args);

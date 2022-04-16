@@ -24,12 +24,11 @@ abstract class Helper implements ArrayAccess, JsonSerializable
     public abstract function get($uuid): ?self;
 
     /**
-     * @param $query
      * @param int $page
      * @param int $per_page
      * @return array|null
      */
-    public abstract function list($query, int $page = 1, int $per_page = 10): ?array;
+    public abstract function list(int $page = 1, int $per_page = 10): ?array;
 
     /**
      * @return int
